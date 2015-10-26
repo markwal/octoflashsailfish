@@ -8,21 +8,29 @@ $(function() {
     function FlashsailfishViewModel(parameters) {
         var self = this;
 
-        // assign the injected parameters, e.g.:
-        // self.loginStateViewModel = parameters[0];
-        // self.settingsViewModel = parameters[1];
+        self.settings = parameters[0];
 
-        // TODO: Implement your plugin's view model here.
+        self.boards = ko.observableArray([]);
+        self.board = ko.observable(undefined);
+        self.versions = ko.observableArray([]);
+        self.version = ko.observable(undefined);
+        self.firmware_path = ko.observable(undefined);
+
+        self.custom_selected = ko.computed(function() {
+            return self.version() == "custom";
+        }, self);
+
+        self.flash_firmware = function() {
+        };
+
+        self.refresh_firmware_xml = function() {
+        };
     }
 
     // view model class, parameters for constructor, container to bind to
     OCTOPRINT_VIEWMODELS.push([
         FlashsailfishViewModel,
-
-        // e.g. loginStateViewModel, settingsViewModel, ...
-        [ /* "loginStateViewModel", "settingsViewModel" */ ],
-
-        // e.g. #settings_plugin_flashsailfish, #tab_plugin_flashsailfish, ...
-        [ /* ... */ ]
+        [ "settingsViewModel" ],
+        [ "#settings_plugin_flashsailfish" ]
     ]);
 });

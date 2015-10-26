@@ -2,22 +2,23 @@
 from __future__ import absolute_import
 
 import octoprint.plugin
+from octoprint.server.util.flask import restricted_access
+from octoprint.server import admin_permission
+from octoprint.plugin import BlueprintPlugin
+
+import requests
+import xmltodict
 
 class FlashSailfishPlugin(octoprint.plugin.SettingsPlugin,
                           octoprint.plugin.AssetPlugin,
-                          octoprint.plugin.TemplatePlugin):
+                          octoprint.plugin.TemplatePlugin,
+						  octoprint.plugin.BlueprintPlugin):
 
 	##~~ SettingsPlugin mixin
 	def get_settings_defaults(self):
 		return dict(
 			url="http://jettyfirmware.yolasite.com/resources/release/firmware.xml"
 		)
-
-	#~~ TemplatePlugin mixin
-	def get_template_configs(self):
-		return [
-			dict(type="settings", custom_bindings=False)
-		]
 
 	##~~ AssetPlugin mixin
 	def get_assets(self):
@@ -44,6 +45,30 @@ class FlashSailfishPlugin(octoprint.plugin.SettingsPlugin,
 				pip="https://github.com/markwal/octoflashsailfish/archive/{target_version}.zip"
 			)
 		)
+
+	##~~ Blueprint mixin
+	@BlueprintPlugin.route("/firmware_file", methods=["POST"])
+	@restricted_access
+	@admin_permission.require(403)
+	def firmware_file(self):
+		pass
+
+	@BlueprintPlugin.route("/refresh_firmware_info", method=["POST"])
+	@restricted_access
+	@admin_permission.require(403)
+	def refresh_firmware_info(self):
+		pass
+
+	##~~ internal
+	def _fetch_firmware_info(self):
+		try:
+			self.xml = requests.get(self._settings.url)
+		except:
+			return make_response("Unable to retrieve firmware information from {0}".format(self._settings.url), 400)
+		try:
+			self.firmware_info = xmltodict.parse(self.xml)
+		except:
+			return make_response("Retrieved firmware information from {0}, but was unable to understand the response.".format(self._settings.url), 400)
 
 
 __plugin_name__ = "Flash Sailfish"
