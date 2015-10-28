@@ -16,6 +16,8 @@ $(function() {
         self.version = ko.observable(undefined);
         self.firmware_path = ko.observable(undefined);
 
+        self.firmware_info = undefined;
+
         self.custom_selected = ko.computed(function() {
             return self.version() == "custom";
         }, self);
@@ -25,6 +27,24 @@ $(function() {
 
         self.refresh_firmware_xml = function() {
         };
+
+        self.refresh_observables = function() {
+            if (self.firmware_info != undefined) {
+                for (board in self.firmware_info) {
+                    self.boards.push(board);
+                }
+                self.boards.sort();
+            }
+        };
+
+        self.fetch_firmware_info = function() {
+            $.getJSON("/plugin/flashsailfish/firmware_info", function(data) {
+                self.firmware_info = data;
+                self.refresh_observables();
+            });
+        };
+
+        self.onSettingsShown = self.fetch_firmware_info;
     }
 
     // view model class, parameters for constructor, container to bind to
